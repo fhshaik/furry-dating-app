@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  font-family:
+    "Avenir Next",
+    "Trebuchet MS",
+    "Segoe UI",
+    sans-serif;
+  background:
+    radial-gradient(circle at top, #ffd7a8 0%, #f3b77b 20%, transparent 48%),
+    linear-gradient(180deg, #8e4b3e 0%, #5e2b2d 45%, #2a1520 100%);
+  color: #241419;
+  --fur-cream: #fff5e7;
+  --fur-sand: #f7d6af;
+  --fur-honey: #eda95d;
+  --fur-rust: #b95839;
+  --fur-berry: #7d3352;
+  --fur-plum: #432238;
+  --fur-ink: #241419;
+  --fur-muted: #6e5252;
+  --fur-line: rgba(82, 37, 40, 0.16);
+  --fur-shadow: 0 28px 70px rgba(33, 15, 28, 0.28);
+}
+
+html {
+  min-height: 100%;
+  background: #2a1520;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 214, 164, 0.82), transparent 24%),
+    radial-gradient(circle at 90% 0%, rgba(238, 166, 122, 0.4), transparent 24%),
+    linear-gradient(180deg, #7a3e37 0%, #4a2430 38%, #24131c 100%);
+  color: var(--fur-ink);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image:
+    radial-gradient(circle at 18px 18px, rgba(255, 243, 225, 0.3) 0 7px, transparent 8px),
+    radial-gradient(circle at 8px 33px, rgba(255, 243, 225, 0.2) 0 4px, transparent 5px),
+    radial-gradient(circle at 28px 33px, rgba(255, 243, 225, 0.2) 0 4px, transparent 5px),
+    radial-gradient(circle at 18px 41px, rgba(255, 243, 225, 0.2) 0 5px, transparent 6px);
+  background-size: 120px 120px;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+  mix-blend-mode: screen;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(237, 169, 93, 0.35);
+}
