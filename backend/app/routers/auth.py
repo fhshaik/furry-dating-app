@@ -36,6 +36,21 @@ def _build_redirect_uri(provider: str) -> str:
     return f"{settings.backend_url.rstrip('/')}/api/auth/{provider}/callback"
 
 
+def _cookie_kwargs() -> dict:
+    """Cookie options: in production use Secure + SameSite=None so cookie is sent on cross-origin API requests."""
+    is_dev = settings.environment == "development"
+    return {
+        "httponly": True,
+        "secure": not is_dev,
+        "samesite": "lax" if is_dev else "none",
+        "max_age": _COOKIE_MAX_AGE,
+    }
+
+
+def _set_auth_cookie(response: RedirectResponse | JSONResponse, access_token: str) -> None:
+    response.set_cookie(key=_COOKIE_NAME, value=access_token, **_cookie_kwargs())
+
+
 @router.get("/demo")
 async def demo_login(request: Request, db: AsyncSession = Depends(get_db)) -> RedirectResponse:
     """Log in as the first seed user (development only). Use to explore example data."""
@@ -52,14 +67,7 @@ async def demo_login(request: Request, db: AsyncSession = Depends(get_db)) -> Re
         )
     access_token = create_access_token(user.id)
     response = RedirectResponse(url=f"{settings.frontend_url}/auth/callback")
-    response.set_cookie(
-        key=_COOKIE_NAME,
-        value=access_token,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        max_age=_COOKIE_MAX_AGE,
-    )
+    _set_auth_cookie(response, access_token)
     return response
 
 
@@ -136,14 +144,7 @@ async def google_callback(
     access_token = create_access_token(user.id)
 
     response = RedirectResponse(url=f"{settings.frontend_url}/auth/callback")
-    response.set_cookie(
-        key=_COOKIE_NAME,
-        value=access_token,
-        httponly=True,
-        samesite="lax",
-        secure=settings.environment != "development",
-        max_age=_COOKIE_MAX_AGE,
-    )
+    _set_auth_cookie(response, access_token)
     return response
 
 
@@ -224,15 +225,9 @@ async def discord_callback(
     access_token = create_access_token(user.id)
 
     response = RedirectResponse(url=f"{settings.frontend_url}/auth/callback")
-    response.set_cookie(
-        key=_COOKIE_NAME,
-        value=access_token,
-        httponly=True,
-        samesite="lax",
-        secure=settings.environment != "development",
-        max_age=_COOKIE_MAX_AGE,
-    )
+    _set_auth_cookie(response, access_token)
     return response
+
 
 # ---------------------------------------------------------------------------
 # Current user
@@ -254,10 +249,5 @@ async def get_me(current_user: User = Depends(get_current_user)) -> User:
 async def logout() -> JSONResponse:
     """Clear the access_token cookie, ending the session."""
     response = JSONResponse(content={"message": "Logged out"})
-    response.delete_cookie(
-        key=_COOKIE_NAME,
-        httponly=True,
-        samesite="lax",
-        secure=settings.environment != "development",
-    )
+    response.delete_cookie(key=_COOKIE_NAME, path="/")
     return response
