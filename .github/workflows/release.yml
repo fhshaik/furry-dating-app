@@ -36,7 +36,17 @@ jobs:
         id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          OUTPUT=$(npx semantic-release 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "Published release"; then
+            VERSION=$(echo "$OUTPUT" | grep -oP "(?<=Published release )\S+")
+            echo "new_release_published=true" >> $GITHUB_OUTPUT
+            echo "new_release_version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "new_release_published=false" >> $GITHUB_OUTPUT
+            echo "new_release_version=" >> $GITHUB_OUTPUT
+          fi
 
   trigger_rc_deploy:
     runs-on: ubuntu-latest
@@ -51,12 +61,4 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.INFRA_DISPATCH_PAT }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository_owner }}/furry-dating-infra/dispatches \
-            -d "{\
-              \"event_type\": \"rc-release\",\
-              \"client_payload\": {\
-                \"version\": \"${{ needs.release.outputs.new_release_version }}\",\
-                \"image_tag\": \"v${{ needs.release.outputs.new_release_version }}\",\
-                \"app_ref\": \"v${{ needs.release.outputs.new_release_version }}\"\
-              }\
-            }"
-          echo "Dispatched RC deploy for v${{ needs.release.outputs.new_release_version }}"
+            -d "{\"event_type\": \"rc-release\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.new_release_version }}\", \"image_tag\": \"v${{ needs.release.outputs.new_release_version }}\", \"app_ref\": \"v${{ needs.release.outputs.new_release_version }}\"}}"
