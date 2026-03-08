@@ -66,6 +66,25 @@ OAuth callback URLs to register locally:
 
 ## Deploy
 
+## RC Release Pipeline
+
+Pushes to the `rc` branch trigger an automated release candidate flow via GitHub Actions:
+
+1. `semantic-release` inspects commits since the last tag using Conventional Commits format.
+2. 2. A pre-release version tag is created automatically (e.g. `v1.2.0-rc.1`).
+   3. 3. A `rc-release` dispatch event is sent to `furry-dating-infra`, which pulls the new image and deploys it to `https://rc.furconnect.xyz`.
+     
+      4. To promote RC to production, merge `rc` into `main`. The same pipeline runs on `main` and cuts a stable release (e.g. `v1.2.0`) which deploys to `https://furconnect.xyz`.
+     
+      5. ### Commit message format (Conventional Commits)
+     
+      6. | Prefix | Effect |
+      7. |--------|--------|
+      8. | `feat:` | Minor version bump (1.x.0) |
+      9. | `fix:` | Patch bump (1.0.x) |
+      10. | `feat!:` or `BREAKING CHANGE:` | Major bump (x.0.0) |
+      11. | `chore:`, `docs:`, `style:` | No release |
+
 `docker-compose.prod.yml` starts the frontend and backend containers only. It does not provision MySQL, so production deploys must point `MYSQL_*` values at an external database.
 
 1. Prepare a production `.env` with real secrets, `ENVIRONMENT=production`, the public `FRONTEND_URL`, and external `MYSQL_*` values.
